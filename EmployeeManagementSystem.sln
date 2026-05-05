@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36930.0 d17.14
+VisualStudioVersion = 17.14.36930.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.Domain", "EmployeeManagement.Domain\EmployeeManagement.Domain.csproj", "{42EA430B-7F57-4362-B591-DAA014E2FDDA}"
 EndProject
@@ -10,6 +10,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.Infrastructure", "EmployeeManagement.Infrastructure\EmployeeManagement.Infrastructure.csproj", "{316FACB6-3863-4458-818C-D63140EA5BED}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.API", "EmployeeManagement.API\EmployeeManagement.API.csproj", "{54C18015-3273-4739-BE37-3FFD89CCB732}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.Domain.Tests", "EmployeeManagement.Domain.Tests\EmployeeManagement.Domain.Tests.csproj", "{3F4AF161-40A9-4CE3-B8DD-81C155D3FAB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.Application.Tests", "EmployeeManagement.Application.Tests\EmployeeManagement.Application.Tests.csproj", "{0E9F0732-9778-4C31-8660-E88C650F06A9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.Infrastructure.Tests", "EmployeeManagement.Infrastructure.Tests\EmployeeManagement.Infrastructure.Tests.csproj", "{49AB51A0-276E-4DC6-87EB-8E3520AACF3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.API.Tests", "EmployeeManagement.API.Tests\EmployeeManagement.API.Tests.csproj", "{E620A946-539D-40FD-8D3D-B1C69D4B722E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,9 +43,31 @@ Global
 		{54C18015-3273-4739-BE37-3FFD89CCB732}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54C18015-3273-4739-BE37-3FFD89CCB732}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{54C18015-3273-4739-BE37-3FFD89CCB732}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F4AF161-40A9-4CE3-B8DD-81C155D3FAB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F4AF161-40A9-4CE3-B8DD-81C155D3FAB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F4AF161-40A9-4CE3-B8DD-81C155D3FAB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F4AF161-40A9-4CE3-B8DD-81C155D3FAB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E9F0732-9778-4C31-8660-E88C650F06A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E9F0732-9778-4C31-8660-E88C650F06A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E9F0732-9778-4C31-8660-E88C650F06A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E9F0732-9778-4C31-8660-E88C650F06A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49AB51A0-276E-4DC6-87EB-8E3520AACF3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49AB51A0-276E-4DC6-87EB-8E3520AACF3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49AB51A0-276E-4DC6-87EB-8E3520AACF3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49AB51A0-276E-4DC6-87EB-8E3520AACF3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E620A946-539D-40FD-8D3D-B1C69D4B722E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E620A946-539D-40FD-8D3D-B1C69D4B722E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E620A946-539D-40FD-8D3D-B1C69D4B722E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E620A946-539D-40FD-8D3D-B1C69D4B722E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3F4AF161-40A9-4CE3-B8DD-81C155D3FAB3} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{0E9F0732-9778-4C31-8660-E88C650F06A9} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{49AB51A0-276E-4DC6-87EB-8E3520AACF3E} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{E620A946-539D-40FD-8D3D-B1C69D4B722E} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {48A69854-711B-4458-B4C1-AF03C2A74965}

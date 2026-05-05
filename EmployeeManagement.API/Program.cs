@@ -14,7 +14,7 @@ namespace EmployeeManagement.API
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-            builder.Services.AddScoped<EmployeeService>();
+            builder.Services.AddScoped<IEmployeeService, EmployeeService>();
             // Add services to the container.
 
             builder.Services.AddControllers();

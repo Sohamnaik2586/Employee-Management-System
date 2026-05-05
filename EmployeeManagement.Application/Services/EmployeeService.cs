@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace EmployeeManagement.Application.Services
 {
-    public class EmployeeService
+    public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepository _repository;
         public EmployeeService(IEmployeeRepository repository)
