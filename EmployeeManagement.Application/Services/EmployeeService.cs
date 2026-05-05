@@ -22,9 +22,10 @@ namespace EmployeeManagement.Application.Services
             var employee = new Employee(dto.Name, dto.Department, dto.Salary);
             _repository.Add(employee);
         }
-
+        
         public List<EmployeeDto> GetEmployees()
         {
+            
             return _repository.GetAll()
                 .Select(e => new EmployeeDto
                 {

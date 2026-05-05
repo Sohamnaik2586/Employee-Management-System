@@ -15,7 +15,17 @@ namespace EmployeeManagement.Infrastructure.Data
         {
             modelBuilder.Entity<Employee>()
                 .Property(e => e.Salary)
-                .HasPrecision(18, 2); // total digits = 18, decimal places = 2
+                .HasPrecision(10, 2); // total digits = 18, decimal places = 2
+            modelBuilder.Entity<Employee>()
+                .Property(e => e.Name)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            modelBuilder.Entity<Employee>()
+                .Property(e => e.Department)
+                .HasMaxLength(25)
+                .IsUnicode(false);
+
         }
+
     }
 }

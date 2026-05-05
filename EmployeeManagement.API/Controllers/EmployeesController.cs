@@ -15,7 +15,11 @@ namespace EmployeeManagement.API.Controllers
         {
             _service = service;
         }
-
+        /// <summary>
+        /// Creates a new employee record using the specified employee data.
+        /// </summary>
+        /// <param name="dto">The data transfer object containing the information required to create a new employee. Cannot be null.</param>
+        /// <returns>An HTTP 200 OK response containing an ApiResponse with a success indicator and a confirmation message.</returns>
         [HttpPost]
         public IActionResult Create(CreateEmployeeDto dto)
         {

@@ -24,6 +24,10 @@ namespace EmployeeManagement.Domain.Entities
             {
                 throw new ArgumentException("Name cannot be empty.");
             }
+            if(name.Length > 50)
+            {
+                throw new ArgumentException("Name cannot exceed 50 characters.");
+            }
             Name = name;
         }
         public void SetDepartment(string department)
@@ -31,6 +35,10 @@ namespace EmployeeManagement.Domain.Entities
             if (string.IsNullOrWhiteSpace(department))
             {
                 throw new ArgumentException("Department cannot be empty.");
+            }
+            if(department.Length > 25)
+            {
+                throw new ArgumentException("Department cannot exceed 25 characters.");
             }
             Department = department;
         }

@@ -6,12 +6,14 @@ namespace EmployeeManagement.Application.DTOs
     {
         [Required]
         [MinLength(2)]
+        [MaxLength(50)]
         public string Name { get; set; }
 
         [Required]
+        [MaxLength(25)]
         public string Department { get; set; }
 
-        [Range(0, 1000000000)]
+        [Range(0, 10000000)]
         public decimal Salary { get; set; }
     }
 }
