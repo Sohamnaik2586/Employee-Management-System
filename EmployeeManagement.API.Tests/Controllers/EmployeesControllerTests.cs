@@ -2,23 +2,25 @@ using Xunit;
 using Moq;
 using Microsoft.AspNetCore.Mvc;
 using EmployeeManagement.API.Controllers;
-using EmployeeManagement.Application.Interfaces;
 using EmployeeManagement.Application.DTOs;
 using EmployeeManagement.Application.Common;
+using MediatR;
+using EmployeeManagement.Application.Commands;
+using EmployeeManagement.Application.Queries;
 
 namespace EmployeeManagement.API.Tests.Controllers
 {
     /// <summary>
     /// Unit tests for the EmployeesController.
     /// Tests API endpoint behavior and HTTP response handling.
-    /// Uses IEmployeeService interface for mocking, which is testable with Moq.
+    /// Uses IMediator interface for mocking, which is testable with Moq.
     /// </summary>
     public class EmployeesControllerTests
     {
-        private EmployeesController CreateController(Mock<IEmployeeService> mockService = null)
+        private EmployeesController CreateController(Mock<IMediator> mockMediator = null)
         {
-            mockService ??= new Mock<IEmployeeService>();
-            return new EmployeesController(mockService.Object);
+            mockMediator ??= new Mock<IMediator>();
+            return new EmployeesController(mockMediator.Object);
         }
 
         // ========================================================================
@@ -26,11 +28,11 @@ namespace EmployeeManagement.API.Tests.Controllers
         // ========================================================================
 
         [Fact]
-        public void Create_WithValidDto_Returns200OkResult()
+        public async Task Create_WithValidDto_Returns200OkResult()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
 
             var createDto = new CreateEmployeeDto
             {
@@ -39,8 +41,12 @@ namespace EmployeeManagement.API.Tests.Controllers
                 Salary = 50000
             };
 
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<CreateEmployeeCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
+
             // ACT
-            var result = controller.Create(createDto);
+            var result = await controller.Create(createDto);
 
             // ASSERT
             var okResult = Assert.IsType<OkObjectResult>(result);
@@ -50,11 +56,11 @@ namespace EmployeeManagement.API.Tests.Controllers
         }
 
         [Fact]
-        public void Create_CallsServiceCreateEmployeeExactlyOnce()
+        public async Task Create_CallsMediatorSendExactlyOnce()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
 
             var createDto = new CreateEmployeeDto
             {
@@ -63,23 +69,27 @@ namespace EmployeeManagement.API.Tests.Controllers
                 Salary = 50000
             };
 
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<CreateEmployeeCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
+
             // ACT
-            controller.Create(createDto);
+            await controller.Create(createDto);
 
             // ASSERT
-            mockService.Verify(
-                s => s.CreateEmployee(It.IsAny<CreateEmployeeDto>()), 
+            mockMediator.Verify(
+                m => m.Send(It.IsAny<CreateEmployeeCommand>(), It.IsAny<CancellationToken>()), 
                 Times.Once, 
-                "Service.CreateEmployee should be called exactly once"
+                "Mediator.Send should be called exactly once"
             );
         }
 
         [Fact]
-        public void Create_PassesCorrectDtoToService()
+        public async Task Create_PassesCorrectCommandToMediator()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
 
             var createDto = new CreateEmployeeDto
             {
@@ -88,19 +98,20 @@ namespace EmployeeManagement.API.Tests.Controllers
                 Salary = 60000
             };
 
-            CreateEmployeeDto capturedDto = null;
-            mockService
-                .Setup(s => s.CreateEmployee(It.IsAny<CreateEmployeeDto>()))
-                .Callback<CreateEmployeeDto>(dto => capturedDto = dto);
+            CreateEmployeeCommand capturedCommand = null;
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<CreateEmployeeCommand>(), It.IsAny<CancellationToken>()))
+                .Callback<IRequest<int>, CancellationToken>((cmd, ct) => capturedCommand = cmd as CreateEmployeeCommand)
+                .ReturnsAsync(1);
 
             // ACT
-            controller.Create(createDto);
+            await controller.Create(createDto);
 
             // ASSERT
-            Assert.NotNull(capturedDto);
-            Assert.Equal("Jane Smith", capturedDto.Name);
-            Assert.Equal("HR", capturedDto.Department);
-            Assert.Equal(60000, capturedDto.Salary);
+            Assert.NotNull(capturedCommand);
+            Assert.Equal("Jane Smith", capturedCommand.Name);
+            Assert.Equal("HR", capturedCommand.Department);
+            Assert.Equal(60000, capturedCommand.Salary);
         }
 
         // ========================================================================
@@ -108,23 +119,23 @@ namespace EmployeeManagement.API.Tests.Controllers
         // ========================================================================
 
         [Fact]
-        public void GetAll_WithEmployeesInDatabase_Returns200OkWithData()
+        public async Task GetAll_WithEmployeesInDatabase_Returns200OkWithData()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
 
             var employees = new List<EmployeeDto>
             {
                 new EmployeeDto { Id = 1, Name = "John Doe", Department = "IT", Salary = 50000 },
                 new EmployeeDto { Id = 2, Name = "Jane Smith", Department = "HR", Salary = 60000 }
             };
-            mockService
-                .Setup(s => s.GetEmployees())
-                .Returns(employees);
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<GetAllEmployeesQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(employees);
 
             // ACT
-            var result = controller.GetAll();
+            var result = await controller.GetAll();
 
             // ASSERT
             var okResult = Assert.IsType<OkObjectResult>(result);
@@ -135,18 +146,18 @@ namespace EmployeeManagement.API.Tests.Controllers
         }
 
         [Fact]
-        public void GetAll_WithNoEmployees_Returns200OkWithEmptyList()
+        public async Task GetAll_WithNoEmployees_Returns200OkWithEmptyList()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
 
-            mockService
-                .Setup(s => s.GetEmployees())
-                .Returns(new List<EmployeeDto>());
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<GetAllEmployeesQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<EmployeeDto>());
 
             // ACT
-            var result = controller.GetAll();
+            var result = await controller.GetAll();
 
             // ASSERT
             var okResult = Assert.IsType<OkObjectResult>(result);
@@ -155,24 +166,24 @@ namespace EmployeeManagement.API.Tests.Controllers
         }
 
         [Fact]
-        public void GetAll_CallsServiceGetEmployeesExactlyOnce()
+        public async Task GetAll_CallsMediatorSendExactlyOnce()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
 
-            mockService
-                .Setup(s => s.GetEmployees())
-                .Returns(new List<EmployeeDto>());
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<GetAllEmployeesQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<EmployeeDto>());
 
             // ACT
-            controller.GetAll();
+            await controller.GetAll();
 
             // ASSERT
-            mockService.Verify(
-                s => s.GetEmployees(), 
+            mockMediator.Verify(
+                m => m.Send(It.IsAny<GetAllEmployeesQuery>(), It.IsAny<CancellationToken>()), 
                 Times.Once, 
-                "Service.GetEmployees should be called exactly once"
+                "Mediator.Send should be called exactly once"
             );
         }
 
@@ -181,11 +192,11 @@ namespace EmployeeManagement.API.Tests.Controllers
         // ========================================================================
 
         [Fact]
-        public void GetById_WithValidId_Returns200OkWithEmployee()
+        public async Task GetById_WithValidId_Returns200OkWithEmployee()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
 
             var employeeDto = new EmployeeDto
             {
@@ -195,12 +206,12 @@ namespace EmployeeManagement.API.Tests.Controllers
                 Salary = 50000
             };
 
-            mockService
-                .Setup(s => s.GetEmployeeById(1))
-                .Returns(employeeDto);
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<GetEmployeeByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(employeeDto);
 
             // ACT
-            var result = controller.GetById(1);
+            var result = await controller.GetById(1);
 
             // ASSERT
             var okResult = Assert.IsType<OkObjectResult>(result);
@@ -210,46 +221,47 @@ namespace EmployeeManagement.API.Tests.Controllers
         }
 
         [Fact]
-        public void GetById_WithInvalidId_Returns404NotFound()
+        public async Task GetById_WithInvalidId_ThrowsException()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
 
-            mockService
-                .Setup(s => s.GetEmployeeById(999))
-                .Returns((EmployeeDto)null);
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<GetEmployeeByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("Employee not found"));
 
-            // ACT
-            var result = controller.GetById(999);
-
-            // ASSERT
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-            var response = Assert.IsType<ApiResponse<string>>(notFoundResult.Value);
-            Assert.False(response.Success);
-            Assert.Equal("Employee not found", response.Message);
+            // ACT & ASSERT
+            await Assert.ThrowsAsync<Exception>(() => controller.GetById(999));
         }
 
         [Fact]
-        public void GetById_PassesCorrectIdToService()
+        public async Task GetById_PassesCorrectQueryToMediator()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
 
-            mockService
-                .Setup(s => s.GetEmployeeById(It.IsAny<int>()))
-                .Returns((EmployeeDto)null);
+            var employeeDto = new EmployeeDto
+            {
+                Id = 5,
+                Name = "John Doe",
+                Department = "IT",
+                Salary = 50000
+            };
+
+            GetEmployeeByIdQuery capturedQuery = null;
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<GetEmployeeByIdQuery>(), It.IsAny<CancellationToken>()))
+                .Callback<IRequest<EmployeeDto>, CancellationToken>((query, ct) => capturedQuery = query as GetEmployeeByIdQuery)
+                .ReturnsAsync(employeeDto);
 
             // ACT
-            controller.GetById(5);
+            await controller.GetById(5);
 
             // ASSERT
-            mockService.Verify(
-                s => s.GetEmployeeById(5), 
-                Times.Once, 
-                "Service.GetEmployeeById should be called with ID 5"
-            );
+            Assert.NotNull(capturedQuery);
+            Assert.Equal(5, capturedQuery.Id);
         }
 
         // ========================================================================
@@ -257,11 +269,11 @@ namespace EmployeeManagement.API.Tests.Controllers
         // ========================================================================
 
         [Fact]
-        public void Update_WithValidData_Returns200Ok()
+        public async Task Update_WithValidData_Returns200Ok()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
 
             var updateDto = new CreateEmployeeDto
             {
@@ -270,8 +282,12 @@ namespace EmployeeManagement.API.Tests.Controllers
                 Salary = 60000
             };
 
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<UpdateEmployeeCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Unit.Value);
+
             // ACT
-            var result = controller.Update(1, updateDto);
+            var result = await controller.Update(1, updateDto);
 
             // ASSERT
             var okResult = Assert.IsType<OkObjectResult>(result);
@@ -281,11 +297,11 @@ namespace EmployeeManagement.API.Tests.Controllers
         }
 
         [Fact]
-        public void Update_PassesCorrectIdAndDtoToService()
+        public async Task Update_PassesCorrectCommandToMediator()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
 
             var updateDto = new CreateEmployeeDto
             {
@@ -294,22 +310,29 @@ namespace EmployeeManagement.API.Tests.Controllers
                 Salary = 60000
             };
 
+            UpdateEmployeeCommand capturedCommand = null;
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<UpdateEmployeeCommand>(), It.IsAny<CancellationToken>()))
+                .Callback<IRequest<Unit>, CancellationToken>((cmd, ct) => capturedCommand = cmd as UpdateEmployeeCommand)
+                .ReturnsAsync(Unit.Value);
+
             // ACT
-            controller.Update(1, updateDto);
+            await controller.Update(1, updateDto);
 
             // ASSERT
-            mockService.Verify(
-                s => s.UpdateEmployee(1, It.IsAny<CreateEmployeeDto>()), 
-                Times.Once
-            );
+            Assert.NotNull(capturedCommand);
+            Assert.Equal(1, capturedCommand.Id);
+            Assert.Equal("Jane Doe", capturedCommand.Name);
+            Assert.Equal("HR", capturedCommand.Department);
+            Assert.Equal(60000, capturedCommand.Salary);
         }
 
         [Fact]
-        public void Update_WhenServiceThrowsException_PropagatesException()
+        public async Task Update_WhenMediatorThrowsException_PropagatesException()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
 
             var updateDto = new CreateEmployeeDto
             {
@@ -318,12 +341,12 @@ namespace EmployeeManagement.API.Tests.Controllers
                 Salary = 60000
             };
 
-            mockService
-                .Setup(s => s.UpdateEmployee(999, It.IsAny<CreateEmployeeDto>()))
-                .Throws(new Exception("Employee not found"));
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<UpdateEmployeeCommand>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("Employee not found"));
 
             // ACT & ASSERT
-            Assert.Throws<Exception>(() => controller.Update(999, updateDto));
+            await Assert.ThrowsAsync<Exception>(() => controller.Update(999, updateDto));
         }
 
         // ========================================================================
@@ -331,14 +354,18 @@ namespace EmployeeManagement.API.Tests.Controllers
         // ========================================================================
 
         [Fact]
-        public void Delete_WithValidId_Returns200Ok()
+        public async Task Delete_WithValidId_Returns200Ok()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
+
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<DeleteEmployeeCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Unit.Value);
 
             // ACT
-            var result = controller.Delete(1);
+            var result = await controller.Delete(1);
 
             // ASSERT
             var okResult = Assert.IsType<OkObjectResult>(result);
@@ -348,53 +375,60 @@ namespace EmployeeManagement.API.Tests.Controllers
         }
 
         [Fact]
-        public void Delete_PassesCorrectIdToService()
+        public async Task Delete_PassesCorrectCommandToMediator()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
+
+            DeleteEmployeeCommand capturedCommand = null;
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<DeleteEmployeeCommand>(), It.IsAny<CancellationToken>()))
+                .Callback<IRequest<Unit>, CancellationToken>((cmd, ct) => capturedCommand = cmd as DeleteEmployeeCommand)
+                .ReturnsAsync(Unit.Value);
 
             // ACT
-            controller.Delete(5);
+            await controller.Delete(5);
 
             // ASSERT
-            mockService.Verify(
-                s => s.DeleteEmployee(5), 
-                Times.Once, 
-                "Service.DeleteEmployee should be called with ID 5"
-            );
+            Assert.NotNull(capturedCommand);
+            Assert.Equal(5, capturedCommand.Id);
         }
 
         [Fact]
-        public void Delete_CallsServiceDeleteEmployeeExactlyOnce()
+        public async Task Delete_CallsMediatorSendExactlyOnce()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
+
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<DeleteEmployeeCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Unit.Value);
 
             // ACT
-            controller.Delete(1);
+            await controller.Delete(1);
 
             // ASSERT
-            mockService.Verify(
-                s => s.DeleteEmployee(It.IsAny<int>()), 
+            mockMediator.Verify(
+                m => m.Send(It.IsAny<DeleteEmployeeCommand>(), It.IsAny<CancellationToken>()), 
                 Times.Once
             );
         }
 
         [Fact]
-        public void Delete_WhenServiceThrowsException_PropagatesException()
+        public async Task Delete_WhenMediatorThrowsException_PropagatesException()
         {
             // ARRANGE
-            var mockService = new Mock<IEmployeeService>();
-            var controller = CreateController(mockService);
+            var mockMediator = new Mock<IMediator>();
+            var controller = CreateController(mockMediator);
 
-            mockService
-                .Setup(s => s.DeleteEmployee(999))
-                .Throws(new Exception("Employee not found"));
+            mockMediator
+                .Setup(m => m.Send(It.IsAny<DeleteEmployeeCommand>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("Employee not found"));
 
             // ACT & ASSERT
-            Assert.Throws<Exception>(() => controller.Delete(999));
+            await Assert.ThrowsAsync<Exception>(() => controller.Delete(999));
         }
     }
 }

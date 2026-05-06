@@ -1,11 +1,6 @@
-﻿using EmployeeManagement.Application.Interfaces;
+﻿using EmployeeManagement.Application.DTOs;
+using EmployeeManagement.Application.Interfaces;
 using EmployeeManagement.Domain.Entities;
-using EmployeeManagement.Application.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EmployeeManagement.Application.Services
 {
@@ -22,10 +17,10 @@ namespace EmployeeManagement.Application.Services
             var employee = new Employee(dto.Name, dto.Department, dto.Salary);
             _repository.Add(employee);
         }
-        
+
         public List<EmployeeDto> GetEmployees()
         {
-            
+
             return _repository.GetAll()
                 .Select(e => new EmployeeDto
                 {
@@ -40,7 +35,8 @@ namespace EmployeeManagement.Application.Services
         {
             var e = _repository.GetById(id);
 
-            if (e == null) return null;
+            if (e is null)
+                throw new Exception("Employee not Found");
 
             return new EmployeeDto
             {
@@ -55,7 +51,7 @@ namespace EmployeeManagement.Application.Services
         {
             var employee = _repository.GetById(id);
 
-            if (employee == null)
+            if (employee is null)
                 throw new Exception("Employee not found");
 
             employee.SetName(dto.Name);
@@ -67,10 +63,10 @@ namespace EmployeeManagement.Application.Services
 
         public void DeleteEmployee(int id)
         {
-            var employee = _repository.GetById(id);
+            var employee = _repository.GetById(id) ?? throw new Exception("Employee not found");
 
-            if (employee == null)
-                throw new Exception("Employee not found");
+            //if (employee is null)
+            //    throw new Exception("Employee not found");
 
             _repository.Delete(id);
         }

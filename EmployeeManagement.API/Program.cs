@@ -2,6 +2,8 @@ using EmployeeManagement.Application.Interfaces;
 using EmployeeManagement.Application.Services;
 using EmployeeManagement.Infrastructure.Data;
 using EmployeeManagement.Infrastructure.Repositories;
+using EmployeeManagement.Application.Commands;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 namespace EmployeeManagement.API
 {
@@ -15,6 +17,10 @@ namespace EmployeeManagement.API
 
             builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+
+            // Register MediatR
+            builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateEmployeeCommand).Assembly));
+
             // Add services to the container.
 
             builder.Services.AddControllers();

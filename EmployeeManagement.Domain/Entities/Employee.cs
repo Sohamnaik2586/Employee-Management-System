@@ -9,8 +9,8 @@ namespace EmployeeManagement.Domain.Entities
     public class Employee
     {
         public int Id { get; private set; }
-        public string Name { get; private set; }   
-        public String Department { get; private set; }
+        public string Name { get; private set; } = string.Empty;
+        public string Department { get; private set; } = string.Empty;
         public decimal Salary { get; private set; }
         public Employee(string name, string department, decimal salary)
         {
