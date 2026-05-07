@@ -21,6 +21,18 @@ namespace EmployeeManagement.API
             // Register MediatR
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateEmployeeCommand).Assembly));
 
+            // Add CORS configuration
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("ReactApp", policy =>
+                {
+                    policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:3000")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                });
+            });
+
             // Add services to the container.
 
             builder.Services.AddControllers();
@@ -38,6 +50,9 @@ namespace EmployeeManagement.API
             }
 
             app.UseHttpsRedirection();
+
+            // Use CORS before other middleware
+            app.UseCors("ReactApp");
 
             app.UseAuthorization();
             app.UseMiddleware<EmployeeManagement.API.Middleware.ExceptionMiddleware>();
