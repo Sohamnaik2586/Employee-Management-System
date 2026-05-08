@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import './App.css';
 import EmployeeList from './components/EmployeeList';
 import EmployeeForm from './components/EmployeeForm';
+import Footer from './components/Footer';
 
 function App() {
   const [showForm, setShowForm] = useState(false);
@@ -28,10 +29,13 @@ function App() {
           </button>
         </div>
 
-        {showForm && <EmployeeForm onSuccess={handleEmployeeCreated} />}
+        <div className={`form-wrapper ${showForm ? 'show' : ''}`}>
+          {showForm && <EmployeeForm onSuccess={handleEmployeeCreated} />}
+        </div>
 
         <EmployeeList refreshTrigger={refreshTrigger} onEmployeeDeleted={handleEmployeeCreated} />
       </main>
+      <Footer />
     </div>
   );
 }

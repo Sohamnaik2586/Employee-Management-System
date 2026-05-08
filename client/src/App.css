@@ -1,11 +1,44 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+.form-wrapper {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.form-wrapper.show {
+  animation: slideDown 0.3s ease-out forwards;
+}
+
 .App {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  flex-direction: column;
 }
 
 .App-header {
   background-color: rgba(0, 0, 0, 0.1);
-  padding: 2rem;
+  padding: 0.6rem 1rem;
   text-align: center;
   color: white;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -13,33 +46,36 @@
 
 .App-header h1 {
   margin: 0;
-  font-size: 2.5rem;
+  font-size: 1.2rem;
   font-weight: 700;
 }
 
 .App-header p {
-  margin: 0.5rem 0 0 0;
-  font-size: 1rem;
+  margin: 0.2rem 0 0 0;
+  font-size: 0.75rem;
   opacity: 0.9;
+  display: none;
 }
 
 .App-main {
   max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+  margin: 0.8rem auto;
+  padding: 0 0.5rem;
+  flex: 1;
+  width: 100%;
 }
 
 .header-controls {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 2rem;
+  margin-bottom: 0.8rem;
 }
 
 .btn {
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   border: none;
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
@@ -90,7 +126,7 @@
 
 @media (max-width: 768px) {
   .App-header h1 {
-    font-size: 1.75rem;
+    font-size: 1rem;
   }
 
   .App-main {

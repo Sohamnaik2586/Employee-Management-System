@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { employeeService } from '../services/employeeService';
 import UpdateEmployeeForm from './UpdateEmployeeForm';
+import ConfirmDialog from './ConfirmDialog';
 import './EmployeeList.css';
 
 export default function EmployeeList({ refreshTrigger, onEmployeeDeleted }) {
@@ -11,6 +12,7 @@ export default function EmployeeList({ refreshTrigger, onEmployeeDeleted }) {
   const [sortField, setSortField] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
   const [editingId, setEditingId] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, id: null, name: '' });
 
   const fetchEmployees = useCallback(async () => {
     try {
@@ -30,17 +32,25 @@ export default function EmployeeList({ refreshTrigger, onEmployeeDeleted }) {
     fetchEmployees();
   }, [fetchEmployees, refreshTrigger]);
 
-  const handleDelete = useCallback(async (id, name) => {
-    if (window.confirm(`Are you sure you want to delete ${name}?`)) {
-      try {
-        await employeeService.delete(id);
-        fetchEmployees();
-        onEmployeeDeleted?.();
-      } catch (err) {
-        setError(`Failed to delete employee: ${err.message}`);
-      }
+  const handleDeleteClick = useCallback((id, name) => {
+    setDeleteConfirm({ isOpen: true, id, name });
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    try {
+      await employeeService.delete(deleteConfirm.id);
+      setDeleteConfirm({ isOpen: false, id: null, name: '' });
+      fetchEmployees();
+      onEmployeeDeleted?.();
+    } catch (err) {
+      setError(`Failed to delete employee: ${err.message}`);
+      setDeleteConfirm({ isOpen: false, id: null, name: '' });
     }
-  }, [fetchEmployees, onEmployeeDeleted]);
+  }, [deleteConfirm.id, fetchEmployees, onEmployeeDeleted]);
+
+  const handleCancelDelete = useCallback(() => {
+    setDeleteConfirm({ isOpen: false, id: null, name: '' });
+  }, []);
 
   const handleSort = useCallback((field) => {
     if (sortField === field) {
@@ -84,6 +94,17 @@ export default function EmployeeList({ refreshTrigger, onEmployeeDeleted }) {
 
   return (
     <div className="employee-list-container">
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        title="Delete Employee"
+        message={`Are you sure you want to delete ${deleteConfirm.name}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDangerous={true}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
+
       {error && (
         <div className="error-message">
           <div>{error}</div>
@@ -159,7 +180,7 @@ export default function EmployeeList({ refreshTrigger, onEmployeeDeleted }) {
                         </button>
                         <button
                           className="btn btn-danger btn-sm"
-                          onClick={() => handleDelete(emp.id, emp.name)}
+                          onClick={() => handleDeleteClick(emp.id, emp.name)}
                         >
                           Delete
                         </button>
@@ -179,3 +200,4 @@ export default function EmployeeList({ refreshTrigger, onEmployeeDeleted }) {
     </div>
   );
 }
+
